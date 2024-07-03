@@ -1,0 +1,6 @@
+*.pdf
+*.out
+*fluid
+*.pyc
+output/*
+scattering/__pycache__/
