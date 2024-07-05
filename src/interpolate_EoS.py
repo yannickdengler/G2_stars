@@ -110,11 +110,15 @@ if __name__ == "__main__":
             return max(eps_III)+(P-max(P_III)), -3
             
     P_arr = []
-    for P in np.logspace(-10,-2,100, base = 10):
+
+    # numP = [100,500,10]
+    numP = [20,50,5]
+
+    for P in np.logspace(-10,-2,numP[0], base = 10):
         P_arr.append(P)
-    for P in np.logspace(-2,3,500, base = 10):
+    for P in np.logspace(-2,3,numP[1], base = 10):
         P_arr.append(P)
-    for P in np.logspace(3,6,10, base = 10):
+    for P in np.logspace(3,6,numP[2], base = 10):
         P_arr.append(P)
 
     with open("EoS/data/EoS_I_inter","w") as f:
@@ -164,7 +168,7 @@ if __name__ == "__main__":
 
 
     with open("EoS/data/EoS_I_inter_P_eps","w") as f:
-        f.write("%e\t%e\n"%(0,0))
+        f.write("%e\t%e\n"%(1e-50,1e-50))
         for P in P_arr:
             eps, n = EoS_I_func(P)
             if n == 0:
@@ -179,7 +183,7 @@ if __name__ == "__main__":
         f.write("%e\t%e\n"%(1e30,1e30))
 
     with open("EoS/data/EoS_II_inter_P_eps","w") as f:
-        f.write("%e\t%e\n"%(0,0))
+        f.write("%e\t%e\n"%(1e-50,1e-50))
         for P in P_arr:
             eps, n = EoS_II_func(P)
             if n == 0:
@@ -194,7 +198,7 @@ if __name__ == "__main__":
         f.write("%e\t%e\n"%(1e10,1e10))
 
     with open("EoS/data/EoS_III_inter_P_eps","w") as f:
-        f.write("%e\t%e\n"%(0,0))
+        f.write("%e\t%e\n"%(1e-50,1e-50))
         for P in P_arr:
             eps, n = EoS_III_func(P)
             if n == 0:

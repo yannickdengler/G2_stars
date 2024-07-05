@@ -1,10 +1,27 @@
 import numpy as np
-from scipy.interpolate import interp1d as inter
+import scipy.interpolate
 import sys
 
 MeV_fm = 197.32698  
 mass_DM = float(sys.argv[1])   # in MeV
 conv_P = mass_DM**4/MeV_fm**3
+
+class interpolate1d(scipy.interpolate.interp1d):
+    """Extend scipy interp1d to interpolate/extrapolate per axis in log space"""
+    
+    def __init__(self, x, y, *args, xspace='linear', yspace='linear', **kwargs):
+        self.xspace = xspace
+        self.yspace = yspace
+        if self.xspace == 'log': x = np.log10(x)
+        if self.yspace == 'log': y = np.log10(y)
+        super().__init__(x, y, *args, **kwargs)
+        
+    def __call__(self, x, *args, **kwargs):
+        if self.xspace == 'log': x = np.log10(x)
+        if self.yspace == 'log':
+            return 10**super().__call__(x, *args, **kwargs)
+        else:
+            return super().__call__(x, *args, **kwargs)
 
 EoS_II = np.transpose(np.genfromtxt("EoS/data/EoS_II_inter_P_eps"))
 G2_EoS = np.transpose(np.genfromtxt("EoS/data/EoS_G2_PP_inter_P_eps"))
@@ -14,8 +31,8 @@ eps_OM = EoS_II[1]/conv_P
 P_DM = G2_EoS[0]
 eps_DM = G2_EoS[1]
 
-OM_inter = inter(P_OM,eps_OM)
-DM_inter = inter(P_DM,eps_DM)
+OM_inter = interpolate1d(P_OM,eps_OM,xspace="log",yspace="log",fill_value="extrapolate")
+DM_inter = interpolate1d(P_DM,eps_DM,xspace="log",yspace="log",fill_value="extrapolate")
 
 def eps_OM_P(P):
     if P <= 0:

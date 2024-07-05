@@ -161,18 +161,29 @@ def c_s_n(n, c, K, gamma):
     else:
         return c_s
 
-def lin_inter(num = 10000):
+def lin_inter(num = 100):
     n_crit = 0.98561                                                                                       # n > n_crit -> c_s > 1!!        
     ind_crit = 0 
     mu_arr, n_arr, P_arr, eps_arr, gamma_arr, K_arr, c_arr = np.transpose(np.genfromtxt("EoS/PP"))
     
     # n_w = np.linspace(0, max(n_arr), num)
-    n_w = np.linspace(0, 1.5, num)
-    mu_w = np.zeros(num)
-    P_w = np.zeros(num)
-    eps_w = np.zeros(num)
-    cs_w = np.zeros(num)
-    for i in range(num):
+    # n_w = np.linspace(0, 1.5, num)
+
+    # n_w = np.linspace(0, 1.077566, num)
+    n_w_low = np.logspace(-3, np.log10(0.03), num)
+    n_w_high = np.logspace(np.log10(0.03), np.log10(1.077566), 15)
+    n_w = []
+    for n in n_w_low:
+        n_w.append(n)
+    for n in n_w_high:
+        n_w.append(n)
+
+    # n_w = np.logspace(-3, np.log10(1.077566), num)
+    mu_w = np.zeros(len(n_w))
+    P_w = np.zeros(len(n_w))
+    eps_w = np.zeros(len(n_w))
+    cs_w = np.zeros(len(n_w))
+    for i in range(len(n_w)):
         n_tmp = n_w[i]
         if n_tmp < n_crit:  
             index = get_index(n_tmp, n_arr)
@@ -190,14 +201,17 @@ def lin_inter(num = 10000):
             mu_w[i] = (P_w[i]+eps_w[i])/n_w[i]
 
     with open("EoS/data/EoS_G2_PP_inter", "w") as f:
-        for i in range(num):
+        for i in range(len(n_w)):
             f.write("%f\t%f\t%f\t%f\t%f\n"%(n_w[i],mu_w[i],P_w[i],eps_w[i],cs_w[i]))
 
 
     with open("EoS/data/EoS_G2_PP_inter_P_eps", "w") as f:              # writes in unitless. P = P/m_F^4
-        for i in range(num):
+        for i in range(len(n_w)):
             f.write("%f\t%f\n"%(P_w[i],eps_w[i]))
         f.write("%f\t%f\n"%(1e30,1e30))
+
+
+
 
     # plt.xlabel("n")
     # plt.scatter(n_arr, mu_arr, label = "mu_OG")
@@ -225,4 +239,4 @@ if __name__ == "__main__":
     delete_doubles()
     add_fermi_dirac()
     PP()
-    lin_inter()
+    lin_inter(num = 100)
