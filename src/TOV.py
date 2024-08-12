@@ -3,7 +3,8 @@ import functions as func
 import EoS
 import global_vars as v
 
-almost_zero = 1e-70
+# almost_zero = 1e-70
+almost_zero = 1e-20
 
 ################################### print EoS 2 fluid
 

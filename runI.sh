@@ -1,5 +1,8 @@
 #!/bin/bash
 
+python3 src/PP_G2.py 939.56542194 1
+python3 src/interpolate_EoS.py 939.56542194 1
+
 cp EoS/scripts/EoS_I_G2.py EoS/scripts/EoS.py
 
 dm_om_arr=(0.250000 0.325367 0.423453 0.551110 0.717251 0.933478 1.214891 1.581139 2.057799 2.678155 3.485528 4.536296 5.903836 7.683642 10.000000)
@@ -16,3 +19,5 @@ do
 	python3 src/run.py $M $dm_om
 done
 done
+
+mv results/M_R* results/full_EoS_I_run

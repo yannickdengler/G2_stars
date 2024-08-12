@@ -1,7 +1,7 @@
 #!/bin/bash
 
-python3 src/PP_G2.py
-python3 src/interpolate_EoS.py
+python3 src/PP_G2.py 939.56542194 1
+python3 src/interpolate_EoS.py 939.56542194 1
 
 cp EoS/scripts/EoS_III_G2.py EoS/scripts/EoS.py
 
@@ -19,3 +19,5 @@ do
 	python3 src/run.py $M $dm_om
 done
 done
+
+mv results/M_R* results/full_EoS_III_run

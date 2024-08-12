@@ -129,7 +129,7 @@ if __name__ == "__main__":
                 mu = neutron_mass
                 n = (eps+P)/mu
             elif n == -3:
-                mu = mu_func_III(P)
+                mu = mu_func_I(P)
                 n = (eps+P)/mu
             else:
                 mu = (eps+P)/n
@@ -144,7 +144,7 @@ if __name__ == "__main__":
                 mu = neutron_mass
                 n = (eps+P)/mu
             elif n == -3:
-                mu = mu_func_III(P)
+                mu = mu_func_II(P)
                 n = (eps+P)/mu
             else:
                 mu = (eps+P)/n
@@ -171,14 +171,6 @@ if __name__ == "__main__":
         f.write("%e\t%e\n"%(1e-50,1e-50))
         for P in P_arr:
             eps, n = EoS_I_func(P)
-            if n == 0:
-                mu = neutron_mass
-                n = (eps+P)/mu
-            elif n == -3:
-                mu = mu_func_III(P)
-                n = (eps+P)/mu
-            else:
-                mu = (eps+P)/n
             f.write("%e\t%e\n"%(P, eps))
         f.write("%e\t%e\n"%(1e30,1e30))
 
@@ -186,14 +178,6 @@ if __name__ == "__main__":
         f.write("%e\t%e\n"%(1e-50,1e-50))
         for P in P_arr:
             eps, n = EoS_II_func(P)
-            if n == 0:
-                mu = neutron_mass
-                n = (eps+P)/mu
-            elif n == -3:
-                mu = mu_func_III(P)
-                n = (eps+P)/mu
-            else:
-                mu = (eps+P)/n
             f.write("%e\t%e\n"%(P, eps))
         f.write("%e\t%e\n"%(1e10,1e10))
 
@@ -201,14 +185,6 @@ if __name__ == "__main__":
         f.write("%e\t%e\n"%(1e-50,1e-50))
         for P in P_arr:
             eps, n = EoS_III_func(P)
-            if n == 0:
-                mu = neutron_mass
-                n = (eps+P)/mu
-            elif n == -3:
-                mu = mu_func_III(P)
-                n = (eps+P)/mu
-            else:
-                mu = (eps+P)/n
             f.write("%e\t%e\n"%(P, eps))
         f.write("%e\t%e\n"%(1e10,1e10))
 
@@ -244,5 +220,3 @@ if __name__ == "__main__":
     plt.legend()
 
     # plt.show()
-
-

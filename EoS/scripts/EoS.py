@@ -23,11 +23,11 @@ class interpolate1d(scipy.interpolate.interp1d):
         else:
             return super().__call__(x, *args, **kwargs)
 
-EoS_II = np.transpose(np.genfromtxt("EoS/data/EoS_II_inter_P_eps"))
+EoS_III = np.transpose(np.genfromtxt("EoS/data/EoS_III_inter_P_eps"))
 G2_EoS = np.transpose(np.genfromtxt("EoS/data/EoS_G2_PP_inter_P_eps"))
 
-P_OM = EoS_II[0]/conv_P
-eps_OM = EoS_II[1]/conv_P
+P_OM = EoS_III[0]/conv_P
+eps_OM = EoS_III[1]/conv_P
 P_DM = G2_EoS[0]
 eps_DM = G2_EoS[1]
 

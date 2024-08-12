@@ -7,7 +7,8 @@ import sys
 sys.path.insert(0, '/home/dengler_yannick/Documents/G2_stars/EoS/scripts')
 import EoS
 
-almost_zero = 1e-70
+# almost_zero = 1e-70
+almost_zero = 1e-20
 
 ################################### print EoS 1 fluid
 
@@ -41,12 +42,12 @@ def print_EoS_mu_2_fluid(mu_start, mu_end, steps):
         f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(mu,EoS.P_OM_mu(mu), EoS.eps_OM_mu(mu), EoS.c_s_OM_mu(mu),EoS.P_DM_mu(mu), EoS.eps_DM_mu(mu), EoS.c_s_DM_mu(mu)))
         f.close()
 
-def print_EoS_P_2_fluid(P_start, P_end, steps):
-    f = open("results/EoS_P_2_fluid.out","w")
+def print_EoS_P_2_fluid(P_start, P_end, steps, pref = ""):
+    f = open("results/EoS_P_2_fluid"+pref+".out","w")
     f.close()
     for i in range(steps):
         P = P_start*(P_end/P_start)**(i/(steps-1))
-        f = open("results/EoS_P_2_fluid.out","a")
+        f = open("results/EoS_P_2_fluid"+pref+".out","a")
         # f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(P,EoS.mu_OM_P(P), EoS.eps_OM_P(P), EoS.c_s_OM_P(P),EoS.mu_DM_P(P), EoS.eps_DM_P(P), EoS.c_s_DM_P(P)))
         f.write("%e\t%e\t%e\t%e\t%e\n"%(P, EoS.eps_OM_P(P), EoS.c_s_OM_P(P), EoS.eps_DM_P(P), EoS.c_s_DM_P(P)))
         f.close()
@@ -295,9 +296,9 @@ def M_R_TIDAL_2_fluid(var_start, var_end, steps, dm_om_ratio, var, init_stepsize
         f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(init_var,R_OM,R_DM,M_OM,M_DM,y,C,k_2))
         f.close()
 
-def write_stability_file(filename_template):
+def write_stability_file(filename_template, pref = ""):
     print(filename_template)
-    data = np.transpose(np.genfromtxt("results/M_R_TIDAL_"+filename_template+".out"))
+    data = np.transpose(np.genfromtxt("results"+"%s"%pref+"/M_R_TIDAL_"+filename_template+".out"))
     P_0 = []
     P_1 = []
     P_0.append(0)
@@ -315,6 +316,6 @@ def write_stability_file(filename_template):
         if stable:
             if i == len(data[0])-2:
                 P_1.append(data[0][i])
-    with open("results/stability_"+filename_template, "w") as f:
+    with open("results"+"%s"%pref+"/stability_"+filename_template, "w") as f:
         for i in range(len(P_0)):
             f.write("%e\t%e\n"%(P_0[i],P_1[i]))

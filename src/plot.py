@@ -170,8 +170,9 @@ def plot_M_R_1_fluid(filename, log = 0):
     plt.show()
 
 
-def plot_M_R_2_fluid(filename, log = 0):
-    M_R = np.transpose(np.genfromtxt(filename))
+def plot_M_R_2_fluid(filename, log = 0, pref = ""):
+    # M_R = np.transpose(np.genfromtxt(filename))
+    M_R = np.transpose(np.genfromtxt("results/"+pref+"/"+filename+".out"))
     R_tot = []
     for i in range(len(M_R[1])):
         R_tot.append(max(M_R[1][i]*v.con_radius,M_R[2][i]*v.con_radius))
@@ -187,8 +188,9 @@ def plot_M_R_2_fluid(filename, log = 0):
     plt.legend()
     plt.title(filename)
     # print(filename)
-    plt.savefig("results/M_R_2_fluid_%s.pdf"%filename[8:len(filename)-4])
-    # plt.show()
+    # plt.savefig("results"+"%s"%pref+"/M_R_2_fluid_%s.pdf"%filename[8:len(filename)-4])
+    plt.savefig("plots/"+pref+"/"+filename+".pdf")
+    plt.show()
 
 def plot_k_2_C_2_fluid(filename, dm_om = 1):
     M_R = np.transpose(np.genfromtxt(filename))

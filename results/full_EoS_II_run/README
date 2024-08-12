@@ -1,3 +1,0 @@
-the compare directory contains two datasets calculated with the old high number of inter points. The EoSI was calculated with way too many points (DM 10000, OM 1000 or sth). In compare was caluclated with (DM 10000, OM ca 100).
-The new version will be with OM 77 and DM 116 which is probably still a lot.
-We will also try log interpolation in  the version
