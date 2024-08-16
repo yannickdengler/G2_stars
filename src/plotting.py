@@ -4,6 +4,7 @@ import global_vars as g
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import matplotlib as mpl
 
 from matplotlib import cm
 from matplotlib.ticker import LinearLocator
@@ -135,8 +136,7 @@ def combine_stables(M_R_stable):
                 for m in range(len(M_R_stable[i][j][k])):           # obs
                     res[i][j].append([])
                     for l in range(len(M_R_stable[i][j][k][m])):             # p0
-                        res[i][j][m].append([])
-                        res[i][j][m][l].append(M_R_stable[i][j][k][m][l])
+                        res[i][j][m].append(M_R_stable[i][j][k][m][l])
     print(len(res))
     print(len(res[0]))
     print(len(res[0][0]))
@@ -157,137 +157,95 @@ def get_data(M_R_stable):
     print(len(M_R_stable[0][0]))
     res = {}
     res["M_OM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
-    res["M_DM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["M_sum"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["ind_crit"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["p_crit"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["R_OM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["R_DM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["R_max"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["M_max"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["M_max_OM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["M_max_DM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["R_crit"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["R_crit_OM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["R_crit_DM"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["k2_max"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["k2_crit"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["C_max"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    res["C_crit"]=[ []*len(M_R_stable) for i in range(len(M_R_stable[0]))]
-    print(res["M_OM"])
+    res["M_DM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["M_sum"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["ind_crit"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["p_crit"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["R_OM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["R_DM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["R_max"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["M_max"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["M_max_OM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["M_max_DM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["R_crit"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["R_crit_OM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["R_crit_DM"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["k2_max"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["k2_crit"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["C_max"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    res["C_crit"]=[[[] for i in range(len(M_R_stable))] for j in range(len(M_R_stable[0]))]
+    print(len(res["M_OM"]),len(res["M_OM"][0]))
 
     for i in range(len(M_R_stable)):
         for j in range(len(M_R_stable[i])):
             print(i,j)
             res["M_OM"][i][j] = M_R_stable[i][j][3]
-            # res["M_DM"][i][j] = M_R_stable[i][j][4]
-            # res["M_sum"][i][j] = [x[3]+x[4] for x in M_R_stable[i][j]]
-            # ind_crit = np.argmax(res["M_sum"][i][j])
-            # res["ind_crit"][i][j] = ind_crit
-            # res["R_OM"][i][j] = M_R_stable[i][j][1]
-            # res["R_DM"][i][j] = M_R_stable[i][j][2]
-            # res["R_max"][i][j] = [max(x[1],x[2]) for x in M_R_stable[i][j]]
-            # res["M_max"][i][j] = res["M_sum"][i][j][ind_crit]
-            # res["M_max_OM"][i][j] = M_R_stable[i][j][3][ind_crit]
-            # res["M_max_DM"][i][j] = M_R_stable[i][j][4][ind_crit]
-            # res["R_crit"][i][j] = res["R_max"][i][j][3][ind_crit]
-            # res["R_crit_OM"][i][j] =  M_R_stable[i][j][1][ind_crit]
-            # res["R_crit_DM"][i][j] =  M_R_stable[i][j][2][ind_crit]
-            # res["k2_max"][i][j] = max(M_R_stable[i][j][7])
-            # res["k2_crit"][i][j] = M_R_stable[i][j][7][ind_crit]
-            # res["C_max"][i][j] = max(M_R_stable[i][j][6])
-            # res["C_crit"][i][j] = M_R_stable[i][j][6][ind_crit]
-            # res["p_crit"][i][j] = M_R_stable[i][j][0][ind_crit]
+            res["M_DM"][i][j] = M_R_stable[i][j][4]
+            for k in range(len(M_R_stable[i][j][3])):
+                res["M_sum"][i][j].append(M_R_stable[i][j][3][k]+M_R_stable[i][j][4][k])
+            ind_crit = np.argmax(res["M_sum"][i][j])
+            res["ind_crit"][i][j] = ind_crit
+            res["R_OM"][i][j] = M_R_stable[i][j][1]
+            res["R_DM"][i][j] = M_R_stable[i][j][2]
+            res["R_max"][i][j]=max(M_R_stable[i][j][1],M_R_stable[i][j][2])
+            res["M_max"][i][j] = res["M_sum"][i][j][ind_crit]
+            res["M_max_OM"][i][j] = M_R_stable[i][j][3][ind_crit]
+            res["M_max_DM"][i][j] = M_R_stable[i][j][4][ind_crit]
+            res["R_crit"][i][j] = res["R_max"][i][j][ind_crit]
+            res["R_crit_OM"][i][j] =  M_R_stable[i][j][1][ind_crit]
+            res["R_crit_DM"][i][j] =  M_R_stable[i][j][2][ind_crit]
+            res["k2_max"][i][j] = max(M_R_stable[i][j][7])
+            res["k2_crit"][i][j] = M_R_stable[i][j][7][ind_crit]
+            res["C_max"][i][j] = max(M_R_stable[i][j][6])
+            res["C_crit"][i][j] = M_R_stable[i][j][6][ind_crit]
+            res["p_crit"][i][j] = M_R_stable[i][j][0][ind_crit]
+    # print(len(res["R_max"]))
+    # print(len(res["R_max"][0]))
+    # print(len(res["R_max"][0][0]))
+    # print(res["R_max"][0][0][0])
+    # print(len(res["M_sum"]))
+    # print(len(res["M_sum"][0]))
+    # print(len(res["M_sum"][0][0]))
+    # print(res["M_sum"][0][0][0])
+    # exit()
     return res
 
-        # M_sum = [x[3]+ x[4] for x in M_R]
-        # M_sum_stable = [x[3]+x[4] for x in M_R_stable]
-        # ind_crit = np.argmax(M_sum_stable)
-        # R_max = [max([x[1],x[2]]) for x in M_R]
-        # R_max_stable = [max([x[1],x[2]]) for x in M_R_stable]
-        # M_max_arr[i][j] = M_sum_stable[ind_crit]
-        # R_crit_max_arr[i][j] = max([M_R_stable[ind_crit][1],M_R_stable[ind_crit][2]])
-        # M_crit_OM_arr[i][j] = M_R_stable[ind_crit][3]
-        # M_crit_DM_arr[i][j] = M_R_stable[ind_crit][4]
-        # R_crit_OM[i][j] = M_R_stable[ind_crit][1]
-        # R_crit_DM[i][j] = M_R_stable[ind_crit][2]
-        # C_crit_arr[i][j] = M_R_stable[ind_crit][6]
-        # k_2_crit_arr[i][j] = M_R_stable[ind_crit][7]
-        # k_2_max_arr[i][j] = max(np.transpose(M_R_stable)[7])
-        # comp[i][j] = M_max_arr[i][j]/R_crit_max_arr[i][j]
+
+
+def plot_3D(arr, label):
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+    M_plot, dm_om_plot = np.meshgrid(M_arr, dm_om_arr)
+
+    surf = ax.plot_surface(np.log10(M_plot), np.log10(dm_om_plot), np.log10(arr), cmap=cm.coolwarm, linewidth=0, antialiased=False)
+
+    ax.set_zlabel(label)
+    ax.set_xlabel("M Dm")
+    ax.set_ylabel("dm_om")
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter('{x:.02f}')
+
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+    plt.show()
+
+def plot_M_R_dm_om(data, M_ind):
+    cmap = mpl.colormaps['viridis']
+    colors = cmap(np.linspace(0, 1, len(data["R_max"])))
+    # print()
+    # print(len(data["R_max"]))
+    # print(len(data["R_max"][0]))
+    # print(len(data["R_max"][0][0]))
+    # print(len(data["R_max"][0][0][0]))
+    # print(data["R_max"][0][0][0][0])
+    for i in range(len(data["R_max"])):
+        plt.plot(data["R_max"][i][M_ind], data["M_sum"][i][M_ind], color = colors[i])
+    plt.show()
+
+
 
 if __name__ == "__main__":
     stable = get_stable_M_R_dm_om_M_arr(1)
     stable_c = combine_stables(stable)
-    print("________-", stable_c[0][0])
     data = get_data(stable_c)
-    # print(data)
-    for key, val in data:
-        print(key, val)    
-
-
-    exit()
-
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-
-# Make data.
-X = np.arange(-5, 5, 1)
-Y = np.arange(-5, 5, .5)
-X, Y = np.meshgrid(X, Y)
-R = np.sqrt(X**2 + Y**2)
-Z = np.sin(R)
-
-# Make data.
-M_plot, dm_om_plot = np.meshgrid(M_arr, dm_om_arr)
-
-
-# for i in range(len(dm_om_plot)):
-#     for j in range(len(dm_om_plot[i])):
-#         print(M_plot[i][j], dm_om_plot[i][j], M_max_arr[i][j])
-
-print(M_max_arr[0][7],np.log10(M_max_arr[0][13]))
-# print(dm_om_plot)
-# print(M_plot)
-# print(M_max_arr)
-
-
-# Plot the surface.
-if plot_max_mass:
-    surf = ax.plot_surface(np.log10(M_plot), np.log10(dm_om_plot), np.log10(M_max_arr), cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlabel("$M_{max}$")
-elif plot_k2_crit:
-    surf = ax.plot_surface(np.log10(M_plot), np.log10(dm_om_plot), k_2_crit_arr, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlabel("$k2_{crit}$")
-elif plot_k2_max:
-    surf = ax.plot_surface(np.log10(M_plot), np.log10(dm_om_plot), k_2_max_arr, cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlabel("$k2_{max}$")
-elif plot_r_crit:
-    surf = ax.plot_surface(np.log10(M_plot), np.log10(dm_om_plot), np.log10(R_crit_OM), cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlabel("$R_{crit}$")
-elif plot_comp:
-    surf = ax.plot_surface(np.log10(M_plot), np.log10(dm_om_plot), np.log10(comp), cmap=cm.coolwarm, linewidth=0, antialiased=False)
-    ax.set_zlabel("C")
-
-ax.set_xlabel("M Dm")
-ax.set_ylabel("dm_om")
-
-# Customize the z axis.
-ax.zaxis.set_major_locator(LinearLocator(10))
-ax.zaxis.set_major_formatter('{x:.02f}')
-
-
-# Add a color bar which maps values to colors.
-fig.colorbar(surf, shrink=0.5, aspect=5)
-
-if plot_max_mass:
-    plt.savefig("plots/max_mass_EoS_%s.pdf"%EoS)
-elif plot_k2_crit:
-    plt.savefig("plots/k2_crit_EoS_%s.pdf"%EoS)
-elif plot_k2_max:
-    plt.savefig("plots/k2_max_EoS_%s.pdf"%EoS)
-elif plot_r_crit:
-    plt.savefig("plots/r_crit_EoS_%s.pdf"%EoS)
-elif plot_comp:
-    plt.savefig("plots/comp_crit_EoS_%s.pdf"%EoS)
-
-plt.show()
+    # plot_3D(data["M_max"],"M_max")
+    plot_M_R_dm_om(data, 14)
