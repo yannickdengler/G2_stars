@@ -19,21 +19,21 @@ def EoS_III_max(m_DM):
 
 
 EoS = int(sys.argv[1])
-plot_max_mass=False
-plot_k2_crit=False
-plot_k2_max=False
-plot_r_crit=False
-plot_comp=False
-if sys.argv[2] == "max_mass":
-    plot_max_mass = True
-elif sys.argv[2] == "k2_crit":
-    plot_k2_crit = True
-elif sys.argv[2] == "k2_max":
-    plot_k2_max = True
-elif sys.argv[2] == "r_crit":
-    plot_r_crit = True
-elif sys.argv[2] == "comp":
-    plot_comp = True
+# plot_max_mass=False
+# plot_k2_crit=False
+# plot_k2_max=False
+# plot_r_crit=False
+# plot_comp=False
+# if sys.argv[2] == "max_mass":
+#     plot_max_mass = True
+# elif sys.argv[2] == "k2_crit":
+#     plot_k2_crit = True
+# elif sys.argv[2] == "k2_max":
+#     plot_k2_max = True
+# elif sys.argv[2] == "r_crit":
+#     plot_r_crit = True
+# elif sys.argv[2] == "comp":
+#     plot_comp = True
 
 MeV_fm = 197.32698  
 MeV_solar = 8.97*1e-61                                                      # 1 MeV in solar masses
@@ -137,11 +137,11 @@ def combine_stables(M_R_stable):
                     res[i][j].append([])
                     for l in range(len(M_R_stable[i][j][k][m])):             # p0
                         res[i][j][m].append(M_R_stable[i][j][k][m][l])
-    print(len(res))
-    print(len(res[0]))
-    print(len(res[0][0]))
-    print(len(res[0][0][0]))
-    print()
+    # print(len(res))
+    # print(len(res[0]))
+    # print(len(res[0][0]))
+    # print(len(res[0][0][0]))
+    # print()
     # exit()
     return res
 
@@ -231,13 +231,9 @@ def plot_3D(arr, label):
 def plot_M_R_dm_om(data, M_ind):
     cmap = mpl.colormaps['viridis']
     colors = cmap(np.linspace(0, 1, len(data["R_max"])))
-    # print()
-    # print(len(data["R_max"]))
-    # print(len(data["R_max"][0]))
-    # print(len(data["R_max"][0][0]))
-    # print(len(data["R_max"][0][0][0]))
-    # print(data["R_max"][0][0][0][0])
+    plt.grid()
     for i in range(len(data["R_max"])):
+        print(len(data["R_max"][i][M_ind]))
         plt.plot(data["R_max"][i][M_ind], data["M_sum"][i][M_ind], color = colors[i])
     plt.show()
 
