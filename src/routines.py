@@ -309,13 +309,16 @@ def write_stability_file(filename_template, pref = ""):
             if not stable:
                 stable = True
                 P_0.append(data[0][i])
-        elif (data[3][i] >= data[3][i+1]) or (data[4][i] >= data[4][i+1]):
+        elif (data[3][i] > data[3][i+1]) or (data[4][i] > data[4][i+1]):
             if stable:
+                if i == len(data[0])-2:
+                    P_1.append(data[0][i+1])
+                else:
+                    P_1.append(data[0][i+2])
                 stable = False
-                P_1.append(data[0][i])
         if stable:
             if i == len(data[0])-2:
-                P_1.append(data[0][i])
+                P_1.append(data[0][i+1])
     with open("results"+"%s"%pref+"/stability_"+filename_template, "w") as f:
         for i in range(len(P_0)):
             f.write("%e\t%e\n"%(P_0[i],P_1[i]))
