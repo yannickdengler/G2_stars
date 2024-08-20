@@ -1,6 +1,5 @@
 import plot
 import sys
-import global_vars as g
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
@@ -19,21 +18,6 @@ def EoS_III_max(m_DM):
 
 
 EoS = int(sys.argv[1])
-# plot_max_mass=False
-# plot_k2_crit=False
-# plot_k2_max=False
-# plot_r_crit=False
-# plot_comp=False
-# if sys.argv[2] == "max_mass":
-#     plot_max_mass = True
-# elif sys.argv[2] == "k2_crit":
-#     plot_k2_crit = True
-# elif sys.argv[2] == "k2_max":
-#     plot_k2_max = True
-# elif sys.argv[2] == "r_crit":
-#     plot_r_crit = True
-# elif sys.argv[2] == "comp":
-#     plot_comp = True
 
 MeV_fm = 197.32698  
 MeV_solar = 8.97*1e-61                                                      # 1 MeV in solar masses
@@ -43,16 +27,6 @@ Planck_Length = 1.6163e-38                                                  # in
 dm_om_arr=(0.250000, 0.325367, 0.423453, 0.551110, 0.717251, 0.933478, 1.214891, 1.581139, 2.057799, 2.678155, 3.485528, 4.536296, 5.903836, 7.683642, 10.000000)
 M_arr=(250.000000, 304.753414, 371.498572, 452.861832, 552.044757, 672.950096, 820.335356, 1000.000000, 1219.013654, 1485.994289, 1811.447329, 2208.179027, 2691.800385, 3281.341424, 4000.000000)
 
-# M_max_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# M_crit_OM_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# M_crit_DM_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# R_crit_max_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# R_crit_OM = np.zeros((len(dm_om_arr), len(M_arr)))
-# R_crit_DM = np.zeros((len(dm_om_arr), len(M_arr)))
-# k_2_crit_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# k_2_max_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# C_crit_arr = np.zeros((len(dm_om_arr), len(M_arr)))
-# comp = np.zeros((len(dm_om_arr), len(M_arr)))
 
 def get_stable_M_R_dm_om_M_arr(EoS):
     '''
@@ -199,15 +173,6 @@ def get_data(M_R_stable):
             res["C_max"][i][j] = max(M_R_stable[i][j][6])
             res["C_crit"][i][j] = M_R_stable[i][j][6][ind_crit]
             res["p_crit"][i][j] = M_R_stable[i][j][0][ind_crit]
-    # print(len(res["R_max"]))
-    # print(len(res["R_max"][0]))
-    # print(len(res["R_max"][0][0]))
-    # print(res["R_max"][0][0][0])
-    # print(len(res["M_sum"]))
-    # print(len(res["M_sum"][0]))
-    # print(len(res["M_sum"][0][0]))
-    # print(res["M_sum"][0][0][0])
-    # exit()
     return res
 
 
