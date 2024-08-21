@@ -189,32 +189,45 @@ def plot_M_R_dm_om(data, M_ind, show=True, save = True):
     if show:
         plt.show()
 
-def plot_M_R_dm_om_keep_stable(data, data_OM, data_DM, M_ind, show=True, save = True):
+def plot_M_R_dm_om_keep_stable(data, data_OM, data_DM, M_ind, show=True, save = True,what_R="max",what_M="sum"):
+    if what_R == "max":
+        R_key = "R_max"
+    elif what_R == "OM":
+        R_key = "R_OM"
+    elif what_R == "DM":
+        R_key = "R_DM"
+    if what_M == "sum":
+        M_key = "M_sum"
+    elif what_M == "OM":
+        M_key = "M_OM"
+    elif what_M == "DM":
+        M_key = "M_DM"
+
     fig, ax = plt.subplots()
     norm = mpl.colors.Normalize(vmin=np.log10(min(dm_om_arr)),vmax=np.log10(max(dm_om_arr)))
     cmap = mpl.cm.ScalarMappable(norm=norm, cmap=mpl.cm.viridis)
     cmap.set_array([])
     colors = cmap.to_rgba(np.linspace(np.log10(min(dm_om_arr)), np.log10(max(dm_om_arr)), len(dm_om_arr)))
     plt.grid()
-    R_max = 0
-    M_max = 0
+    x_max = 0
+    y_max = 0
     for i in range(len(data)):
         for j in range(len(data[i][M_ind])):
-            R_max = max([R_max, max(data[i][M_ind][j]["R_max"])])
-            M_max = max([M_max, max(data[i][M_ind][j]["M_sum"])])
-            plt.plot(data[i][M_ind][j]["R_max"], data[i][M_ind][j]["M_sum"], color = colors[i])
-    ax.plot(data_OM["R_max"], data_OM["M_sum"], color = "black", label = "OM", ls = "dashed")
-    ax.plot(data_DM["R_max"], data_DM["M_sum"], color = "black", label = "DM", ls = "solid")
-    ax.set_xlabel("$R_{max}$")
-    ax.set_ylabel("$M_{tot}$")
-    ax.set_xlim([0,1.1*R_max])
-    ax.set_ylim([0,1.1*M_max])
+            x_max = max([x_max, max(data[i][M_ind][j][R_key])])
+            y_max = max([y_max, max(data[i][M_ind][j][M_key])])
+            plt.plot(data[i][M_ind][j][R_key], data[i][M_ind][j][M_key], color = colors[i])
+    ax.plot(data_OM[R_key], data_OM[M_key], color = "black", label = "OM", ls = "dashed")
+    ax.plot(data_DM[R_key], data_DM[M_key], color = "black", label = "DM", ls = "solid")
+    ax.set_xlabel("$R_{%s}$"%what_R)
+    ax.set_ylabel("$M_{%s}$"%what_M)
+    ax.set_xlim([0,1.1*x_max])
+    ax.set_ylim([0,1.1*y_max])
     cb = plt.colorbar(cmap)
     cb.set_label("$p_{0,DM}/p_{0,OM}$")
     plt.title("$m_{DM}=%1.1e MeV$"%M_arr[M_ind])
     plt.legend()
     if save:
-        plt.savefig("plots/full_EoS_%s_run/M_R_EoS_%s_dm_om_M_DM_%e.pdf"%(EoS_str,EoS_str,M_arr[M_ind]))
+        plt.savefig("plots/full_EoS_%s_run/M_%s_R_%s_EoS_%s_dm_om_M_DM_%e.pdf"%(EoS_str,what_M,what_R,EoS_str,M_arr[M_ind]))
     if show:
         plt.show()
     ax.cla()
@@ -277,6 +290,8 @@ def plot_all_M_tot_R_tot():
     for i in range(15):
         data_OM, data_DM = get_data_stable_OM_DM((M_arr[i]/1000)**(-2))
         plot_M_R_dm_om_keep_stable(data,data_OM,data_DM, i, show = False, save=True)
+        plot_M_R_dm_om_keep_stable(data,data_OM,data_DM, i, show = False, save=True,what_R="OM",what_M="OM")
+        plot_M_R_dm_om_keep_stable(data,data_OM,data_DM, i, show = False, save=True,what_R="DM",what_M="DM")
 
 def plot_all_k_2_C():
     data = get_data_stable()
@@ -318,14 +333,14 @@ def plot_all_3D():
         k2_max_arr.append([])
         for j in range(len(M_arr)):
             k2_max_arr[i].append(max(tmp[i][j]))
-    plot_3D(k2_max_arr, label="$k_{2max}$", save=True, show=True)
+    plot_3D(k2_max_arr, label="$k_{2max}$", save=True, show=False)
     
 
 
 
 if __name__ == "__main__":
-    # plot_all_M_tot_R_tot()
-    # plot_all_k_2_C()
+    plot_all_M_tot_R_tot()
+    plot_all_k_2_C()
     plot_all_3D()
 
         
