@@ -127,6 +127,5 @@ def created_outfile_Axel(pref="", num_OM=10, num_DM=10,m_DM=m_neutron):
 
 if __name__ == "__main__":
     for m_DM in (500, 1000.000000, 2000.000000,4000):
-        # for pref in ["light_EoS_I_",]:
         for pref in ["light_EoS_I_","light_EoS_II_","light_EoS_III_", "heavy_EoS_I_", "heavy_EoS_II_", "heavy_EoS_III_"]:
             created_outfile_Axel(pref=pref, num_OM=100, num_DM=100, m_DM=m_DM)

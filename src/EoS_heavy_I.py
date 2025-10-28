@@ -5,7 +5,7 @@ almost_zero = 1e-50
 
 m_neutron = 939.5654205    
 
-c_DM, K_DM, g_DM, P_arr_DM = np.transpose(np.genfromtxt("../EoS_calc/output/cKgP_DM_heavy.csv", delimiter=","))
+c_DM, K_DM, g_DM, P_arr_DM = np.transpose(np.genfromtxt("EoS_calc/output/cKgP_DM_heavy.csv", delimiter=","))
 
 def get_index_DM(P):
     for i in range(len(P_arr_DM)):
@@ -36,7 +36,7 @@ def c_s2_DM(P):
     else:
         return 0
 
-c_OMI, K_OMI, g_OMI, P_arr_OMI = np.transpose(np.genfromtxt("../EoS_calc/output/cKgP_EoSI.csv", delimiter=","))
+c_OMI, K_OMI, g_OMI, P_arr_OMI = np.transpose(np.genfromtxt("EoS_calc/output/cKgP_EoSI.csv", delimiter=","))
 def rescale_OMI(m_DM):
     for i in range(len(P_arr_OMI)):
         c_OMI[i] = c_OMI[i]*m_neutron/m_DM
