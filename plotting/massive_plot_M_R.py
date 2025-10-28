@@ -83,13 +83,13 @@ def plot_M_R(data, ax):
 
 def do_four_plots(axs, EoS):
     [ax1,ax2,ax3,ax4] = axs
-    data = get_data("data/%s_data_m_DM_%e.dat"%(EoS,500))
+    data = get_data("stability_results/%s_data_m_DM_%e.dat"%(EoS,500))
     sc = plot_M_R(data, ax1)
-    data = get_data("data/%s_data_m_DM_%e.dat"%(EoS,1000))
+    data = get_data("stability_results/%s_data_m_DM_%e.dat"%(EoS,1000))
     plot_M_R(data, ax2)
-    data = get_data("data/%s_data_m_DM_%e.dat"%(EoS,2000))
+    data = get_data("stability_results/%s_data_m_DM_%e.dat"%(EoS,2000))
     plot_M_R(data, ax3)
-    data = get_data("data/%s_data_m_DM_%e.dat"%(EoS,4000))
+    data = get_data("stability_results/%s_data_m_DM_%e.dat"%(EoS,4000))
     plot_M_R(data, ax4)
 
     xtext = 0.97

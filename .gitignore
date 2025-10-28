@@ -6,3 +6,4 @@
 output/*
 scattering/__pycache__/
 *.dat
+*.png
