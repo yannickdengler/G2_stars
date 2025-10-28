@@ -1,210 +1,179 @@
-import integration as integrate
-import functions as func
+import numpy as np
 import EoS
-import global_vars as v
+import integrate
+import func
+import warnings
+import multiprocessing
+import sys
 
-# almost_zero = 1e-70
-almost_zero = 1e-20
+n_cores = 8
 
-################################### print EoS 2 fluid
+almost_zero = 1e-50
 
-def print_EoS_mu_2_fluid(mu_start, mu_end, steps):
-    f = open("results/EoS_mu_2_fluid.out","w")
+from EoS import eps_DM as eps_DM
+from EoS import n_of_P_DM as n_DM
+from EoS import c_s2_DM as c_s2_DM
+
+from EoS import eps_OM as eps_OM
+from EoS import n_OM as n_OM
+from EoS import c_s2_OM as c_s2_OM
+from EoS import rescale_OM as rescale_OM
+
+def print_EoS():
+    f = open("results/EoS.out","w")
+    Parr_OM = np.logspace(-6.5, np.log10(0.005746510987081789), 200)
+    Parr_DM = np.logspace(-6.5, np.log10(0.929846126816694), 200)
+
+    for P_OM, P_DM in zip(Parr_OM,Parr_DM):
+        f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(P_OM,n_OM(P_OM),eps_OM(P_OM),c_s2_OM(P_OM),P_DM,n_DM(P_DM),eps_DM(P_DM),c_s2_DM(P_DM)))
     f.close()
-    for i in range(steps):
-        mu = mu_start*(mu_end/mu_start)**(i/(steps-1))
-        f = open("results/EoS_mu_2_fluid.out","a")
-        f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(mu,EoS.P_OM_mu(mu), EoS.eps_OM_mu(mu), EoS.c_s_OM_mu(mu),EoS.P_DM_mu(mu), EoS.eps_DM_mu(mu), EoS.c_s_DM_mu(mu)))
-        f.close()
 
-def print_EoS_P_2_fluid(P_start, P_end, steps):
-    f = open("results/EoS_P_2_fluid.out","w")
-    f.close()
-    for i in range(steps):
-        P = P_start*(P_end/P_start)**(i/(steps-1))
-        f = open("results/EoS_P_2_fluid.out","a")
-        f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(mu,EoS.mu_OM_P(P), EoS.eps_OM_P(P), EoS.c_s_OM_P(P),EoS.mu_DM_P(P), EoS.eps_DM_P(P), EoS.c_s_DM_P(P)))
-        f.close()
-
-################################### TOV 1 fluid
-
-def TOV_mu(init_mu, stepsize):
-    mu = init_mu
-    r = stepsize
-    M = 4*v.pi/3*EoS.eps_mu(mu)*r**3
-    P = EoS.P_mu(mu)
-    while( EoS.P_mu(mu) > 0 and mu != 0):
-        r, (mu,M), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r, func.d_M_r_mu), vals=(mu,M), limit=1e-3)
-        # r, (mu,M) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r, func.d_M_r_mu), vals=(mu,M))
-        # r, (mu,M) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r, func.d_M_r_mu), vals=(mu,M))
-        if EoS.P_mu(mu) < almost_zero or mu < almost_zero:
-            mu = 0
-    return (init_mu,r,M)
-
-def TOV_P(init_P, stepsize):
-    P = init_P
-    r = stepsize
-    M = 4*v.pi/3*EoS.eps_P(P)*r**3
-    while( P > 0):
-        r, (P,M), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_P_r, func.d_M_r_P), vals=(P,M), limit=1e-3)
-        # r, (mu,M) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_P_r, func.d_M_r_P), vals=(P,M))
-        # r, (mu,M) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_P_r, func.d_M_r_P), vals=(P,M))
-        if P < almost_zero:
-            P = 0
-    return (init_P,r,M)
-
-################################### TOV 2 fluid
-
-def TOV_2_fluid_mu(init_mu, stepsize, dm_om_ratio):
-    mu_OM = init_mu
-    if dm_om_ratio < 0:
-        mu_DM = -dm_om_ratio*init_mu
-        mu_OM = 0
-    else:
-        mu_DM = dm_om_ratio*init_mu
-    r = stepsize
-    M_OM = 4*v.pi/3*EoS.eps_OM_mu(mu_OM)*r**3
-    M_DM = 4*v.pi/3*EoS.eps_DM_mu(mu_DM)*r**3
+def single(p0_OM, p0_DM):
+    f = open("results/single_TIDAL_P_2.out","w")
+    stepsize = 0.03
+    P_OM = p0_OM
+    P_DM = p0_DM
+    r = 0.0001
+    y = 2
+    M_OM = 4*np.pi/3*eps_OM(P_OM)*r**3
+    M_DM = 4*np.pi/3*eps_DM(P_DM)*r**3
+    N_OM = 4*np.pi/3*n_OM(P_OM)*r**3
+    N_DM = 4*np.pi/3*n_DM(P_OM)*r**3
     OM_fin = 0
     DM_fin = 0
     R_OM = 0
     R_DM = 0
-    while( EoS.P_OM_mu(mu_OM) > 0 or EoS.P_DM_mu(mu_DM) > 0 ):
-        r, (mu_OM, mu_DM,M_OM, M_DM), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r_OM, func.d_mu_r_DM, func.d_M_r_mu_OM, func.d_M_r_mu_DM), vals=(mu_OM,mu_DM,M_OM,M_DM), limit=1e-3)
-        # r, (mu_OM, mu_DM,M_OM, M_DM) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r_OM, func.d_mu_r_DM, func.d_M_r_mu_OM, func.d_M_r_mu_DM), vals=(mu_OM,mu_DM,M_OM,M_DM))
-        # r, (mu_OM, mu_DM,M_OM, M_DM) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r_OM, func.d_mu_r_DM, func.d_M_r_mu_OM, func.d_M_r_mu_DM), vals=(mu_OM,mu_DM,M_OM,M_DM))
-        
-        if EoS.P_OM_mu(mu_OM) < almost_zero and OM_fin == 0:
-            mu_OM = 0
-            R_OM = r
-            OM_fin = 1
-        if EoS.P_DM_mu(mu_DM) < almost_zero and DM_fin == 0:
-            mu_DM = 0
-            R_DM = r
-            DM_fin = 1
-    return (R_OM, R_DM , M_OM, M_DM)
-
-def TOV_2_fluid_P(init_P, stepsize, dm_om_ratio):
-    P_OM = init_P
-    if dm_om_ratio < 0:
-        P_DM = -dm_om_ratio*init_P
-        P_OM = 0
-    else:
-        P_DM = dm_om_ratio*init_P
-    r = stepsize
-    M_OM = 4*v.pi/3*EoS.eps_OM_P(P_OM)*r**3
-    M_DM = 4*v.pi/3*EoS.eps_DM_P(P_DM)*r**3
-    OM_fin = 0
-    DM_fin = 0
-    R_OM = 0
-    R_DM = 0
-    while( P_OM > 0 or P_DM > 0 ):
-        # print(stepsize*v.con_radius, P_OM*v.con_pressure, P_DM*v.con_pressure, M_OM*v.con_mass, M_DM*v.con_mass, OM_fin, DM_fin)
-        r, (P_OM, P_DM,M_OM, M_DM), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM), vals=(P_OM,P_DM,M_OM,M_DM), limit=1e-2)
-        # r, (P_OM, P_DM,M_OM, M_DM) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM), vals=(P_OM,P_DM,M_OM,M_DM))
-        # r, (P_OM, P_DM,M_OM, M_DM) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM), vals=(P_OM,P_DM,M_OM,M_DM))
-        
-        if stepsize < almost_zero or stepsize > 1/almost_zero:
-            P_OM = 0
-            P_DM = 0    
+    r_safe = 0
+    while(P_OM > 0 or P_DM > 0):
+        if r != r_safe:
+            f = open("results/single_TIDAL_P_2.out","a")
+            e_OM = eps_OM(P_OM)
+            c_s_OM = c_s2_OM(P_OM)
+            e_DM = eps_DM(P_DM)
+            c_s_DM = c_s2_DM(P_DM)
+            M = M_OM + M_DM
+            f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(r, stepsize, M_OM, M_DM, N_OM, N_DM, P_OM, P_DM, e_OM, e_DM, c_s_OM, c_s_DM, y, func.Q_P_2_fluid(r, P_OM, P_DM, M), func.F_P_2_fluid(r, P_OM, P_DM, M),func.d_y_r_P_2(r,(P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y))))
+            f.close()
+        r_safe = r
+        # r, (P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_N_r_OM, func.d_N_r_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y),limit=0.1)
+        r, (P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_N_r_OM, func.d_N_r_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y))
+        y = min([max([y,-3]),2])
         if P_OM < almost_zero and OM_fin == 0:
             P_OM = 0
-            R_OM = r
+            R_OM = r_safe
             OM_fin = 1
         if P_DM < almost_zero and DM_fin == 0:
             P_DM = 0
-            R_DM = r
-            DM_fin = 1 
-    return (R_OM, R_DM , M_OM, M_DM)
+            R_DM = r_safe
+            DM_fin = 1  
+    return (R_OM, R_DM , M_OM, M_DM, N_OM, N_DM, y)
 
-################################### TOV_TIDAL 1 fluid
-
-def TOV_TIDAL_mu(init_mu, stepsize):
-    mu = init_mu
+def TOV(p0_OM, p0_DM, stepsize=0.01):
+    # stepsize = 0.005                # test 1 - 284 s
+    # # stepsize = 0.03                # test 2 - 37 s
+    # # stepsize = 0.01                # test 3 - 47 s
+    P_OM = p0_OM
+    P_DM = p0_DM
+    r = 0.0001
     y = 2
-    r = stepsize
-    M = 4*v.pi/3*EoS.eps_mu(mu)*r**3
-    P = EoS.P_mu(mu)
-    while( EoS.P_mu(mu) > 0):
-        r, (mu,M,y), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r, func.d_M_r_mu,func.d_y_r_mu), vals=(mu,M,y), limit=1e-3)
-        # r, (mu,M,y) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r, func.d_M_r_mu,func.d_y_r_mu), vals=(mu,M,y))
-        # r, (mu,M,y) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r, func.d_M_r_mu,func.d_y_r_mu), vals=(mu,M,y))
-        if EoS.P_mu(mu) < almost_zero:
-            mu = 0
-    return (init_mu,r,M,y)
-
-def TOV_TIDAL_P(init_P, stepsize):
-    P = init_P
-    y = 2
-    r = stepsize
-    M = 4*v.pi/3*EoS.eps_P(P)*r**3
-    while( P > 0):
-        r, (P,M,y), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_P_r, func.d_M_r_P,func.d_y_r_P), vals=(P,M,y), limit=1e-3)
-        # r, (P,M,y) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_P_r, func.d_M_r_P,func.d_y_r_P), vals=(P,M,y))
-        # r, (P,M,y) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_P_r, func.d_M_r_P,func.d_y_r_P), vals=(P,M,y))
-        if P < almost_zero:
-            P = 0
-    return (init_P,r,M,y)
-
-################################### TOV_TIDAL 2 fluid asdasdasd
-
-def TOV_TIDAL_2_fluid_mu(init_mu, stepsize, dm_om_ratio):
-    mu_OM = init_mu
-    if dm_om_ratio < 0:
-        mu_DM = -dm_om_ratio*init_mu
-        mu_OM = 0
-    else:
-        mu_DM = dm_om_ratio*init_mu
-    y = 2
-    r = stepsize
-    M_OM = 4*v.pi/3*EoS.eps_OM_mu(mu_OM)*r**3
-    M_DM = 4*v.pi/3*EoS.eps_DM_mu(mu_DM)*r**3
+    M_OM = 4*np.pi/3*eps_OM(P_OM)*r**3
+    M_DM = 4*np.pi/3*eps_DM(P_DM)*r**3
+    N_OM = 4*np.pi/3*n_OM(P_OM)*r**3
+    N_DM = 4*np.pi/3*n_DM(P_DM)*r**3
     OM_fin = 0
     DM_fin = 0
     R_OM = 0
     R_DM = 0
-    # print("mu, P",mu_OM, EoS.P_OM_mu(mu_OM))
-    while( EoS.P_OM_mu(mu_OM) > 0 or EoS.P_DM_mu(mu_DM) > 0 ):
-        r, (mu_OM, mu_DM,M_OM, M_DM, y), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r_OM, func.d_mu_r_DM, func.d_M_r_mu_OM, func.d_M_r_mu_DM, func.d_y_r_mu_2), vals=(mu_OM,mu_DM,M_OM,M_DM,y), limit=1e-3)
-        # r, (mu_OM, mu_DM,M_OM, M_DM, y) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r_OM, func.d_mu_r_DM, func.d_M_r_mu_OM, func.d_M_r_mu_DM, func.d_y_r_mu_2), vals=(mu_OM,mu_DM,M_OM,M_DM,y))
-        # r, (mu_OM, mu_DM,M_OM, M_DM, y) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_mu_r_OM, func.d_mu_r_DM, func.d_M_r_mu_OM, func.d_M_r_mu_DM, func.d_y_r_mu_2), vals=(mu_OM,mu_DM,M_OM,M_DM,y))
-        if EoS.P_OM_mu(mu_OM) < almost_zero and OM_fin == 0:
-            mu_OM = 0
-            R_OM = r
-            OM_fin = 1
-        if EoS.P_DM_mu(mu_DM) < almost_zero and DM_fin == 0:
-            mu_DM = 0
-            R_DM = r
-            DM_fin = 1
-    return (R_OM, R_DM, M_OM, M_DM, y)
-
-def TOV_TIDAL_2_fluid_P(init_P, stepsize, dm_om_ratio):
-    P_OM = init_P
-    if dm_om_ratio < 0:
-        P_DM = -dm_om_ratio*init_P
-        P_OM = 0
-    else:
-        P_DM = dm_om_ratio*init_P
-    y = 2
-    r = stepsize
-    M_OM = 4*v.pi/3*EoS.eps_OM_P(P_OM)*r**3
-    M_DM = 4*v.pi/3*EoS.eps_DM_P(P_DM)*r**3
-    OM_fin = 0
-    DM_fin = 0
-    R_OM = 0
-    R_DM = 0
+    C_OM = 0
+    C_DM = 0
+    r_safe = 0
     while( P_OM > 0 or P_DM > 0 ):
-        r, (P_OM, P_DM,M_OM, M_DM, y), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,y), limit=1e-3)
-        # r, (P_OM, P_DM,M_OM, M_DM, y) = integrate.Euler_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,y))
-        # r, (P_OM, P_DM,M_OM, M_DM, y) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,y))
-        
+        if y < -1 or y > 2:
+            print(y)
+        r_safe = r
+        # r, (P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y), stepsize = integrate.adapt_stepsize_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_N_r_OM, func.d_N_r_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y), limit = 0.2)
+        r, (P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y) = integrate.RK_4_step(r=r, stepsize=stepsize, funcs=(func.d_P_r_OM, func.d_P_r_DM, func.d_M_r_P_OM, func.d_M_r_P_DM, func.d_N_r_OM, func.d_N_r_DM, func.d_y_r_P_2), vals=(P_OM,P_DM,M_OM,M_DM,N_OM,N_DM,y))
+        if y > 2:
+            y=2
+        elif y < -1:
+            y=-1
         if P_OM < almost_zero and OM_fin == 0:
             P_OM = 0
-            R_OM = r
+            R_OM = r_safe
+            C_OM = (M_OM+M_DM)/R_OM
             OM_fin = 1
         if P_DM < almost_zero and DM_fin == 0:
             P_DM = 0
-            R_DM = r
+            R_DM = r_safe
+            C_DM = (M_OM+M_DM)/R_DM
             DM_fin = 1
-    return (R_OM, R_DM , M_OM, M_DM, y)
+    return (R_OM, R_DM, M_OM, M_DM, N_OM, N_DM, y, C_OM, C_DM)
 
+m_neutron = 939.5654205
+
+def compute_one_pair(p0_OM, p0_DM):
+    if p0_OM == 0 and p0_DM == 0:
+        return "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n" % (
+            0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)
+    else:
+        R_OM, R_DM, M_OM, M_DM, N_OM, N_DM, y, C_OM, C_DM = TOV(p0_OM, p0_DM, float(sys.argv[2]))
+        C = (M_OM+M_DM)/max(R_OM,R_DM, 1e-100)
+        k_2 = func.k_2_y(y, C)
+        return "%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n" % (
+            p0_OM,p0_DM,R_OM,R_DM, max(R_OM,R_DM),M_OM,M_DM,
+            M_OM+M_DM,N_OM,N_DM,y,C,k_2, C_OM, C_DM,
+            eps_OM(p0_OM), eps_DM(p0_DM))
+
+def worker(args):
+    p0_OM, p0_DM = args
+    return compute_one_pair(p0_OM, p0_DM,)
+
+def M_R_parallel(p0_OM_min, p0_OM_max, p0_DM_min, p0_DM_max, steps_OM=40, steps_DM=40, m_DM = m_neutron, pref=""):
+    rescale_OM(m_DM=m_DM)
+    p_0_OM_arr = [0,]
+    for P_0 in np.logspace(np.log10(p0_OM_min),np.log10(p0_OM_max),steps_OM):
+        p_0_OM_arr.append(P_0)
+    p_0_DM_arr = [0,]
+    for P_0 in np.logspace(np.log10(p0_DM_min),np.log10(p0_DM_max),steps_DM):
+        p_0_DM_arr.append(P_0)
+
+    tasks = [(p0_OM, p0_DM) for p0_OM in p_0_OM_arr for p0_DM in p_0_DM_arr]
+
+    with multiprocessing.Pool(n_cores) as pool:
+        results = pool.map(worker, tasks)
+
+    # Write everything at once
+    with open("results/"+pref+"_M_R_mDM_%e.out"%m_DM, "w") as f:
+        f.writelines(results)
+
+def M_R(p0_OM_min, p0_OM_max, p0_DM_min, p0_DM_max, steps_OM=40, steps_DM=40, m_DM = m_neutron, pref="",stepsize=0.01):
+    rescale_OM(m_DM=m_DM)
+    p_0_OM_arr = [0,]
+    for P_0 in np.logspace(np.log10(p0_OM_min),np.log10(p0_OM_max),steps_OM):
+        p_0_OM_arr.append(P_0)
+    p_0_DM_arr = [0,]
+    for P_0 in np.logspace(np.log10(p0_DM_min),np.log10(p0_DM_max),steps_DM):
+        p_0_DM_arr.append(P_0)
+    # with open("results/M_R_"+pref+".out","w") as f:
+    with open("results/"+pref+"_M_R_mDM_%e.out"%m_DM,"w") as f:
+        for p0_OM in p_0_OM_arr:
+            for p0_DM in p_0_DM_arr:    
+                if p0_OM == 0 and p0_DM == 0:
+                    f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0))
+                else:
+                    R_OM, R_DM, M_OM, M_DM, N_OM, N_DM, y, C_OM, C_DM = TOV(p0_OM, p0_DM, stepsize)
+                    C = (M_OM+M_DM)/max(R_OM,R_DM, 1e-100)
+                    k_2 = func.k_2_y(y, C)
+                    f.write("%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\t%e\n"%(p0_OM,p0_DM,R_OM,R_DM, max(R_OM,R_DM),M_OM,M_DM, M_OM+M_DM,N_OM,N_DM,y,C,k_2, C_OM, C_DM, eps_OM(p0_OM), eps_DM(p0_DM)))
+
+# if __name__ =="__main__":
+    # res = single(1e-3,2e-3)<
+    # print(res)
+    # print(TOV(1e-3,2e-3))
+    # print(func.k_2_y(res[6], (res[2]+res[3])/max([res[0],res[1]]) ))
+
+    # print_EoS()
+
+    # M_R(5e-6, 0.018, 0.00004, 6.757564e-03, pref="_big",steps_OM=110,steps_DM=100)    
+    # M_R(5e-6, 1e-2, 0.00004, 0.007, pref="runtime_test_1",steps_OM=25,steps_DM=20)    
+    # M_R(5e-6, 1e-2, 0.00004, 0.007, pref="runtime_test_1",steps_OM=25,steps_DM=20)
